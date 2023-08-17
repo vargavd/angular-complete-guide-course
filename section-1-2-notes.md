@@ -8,6 +8,9 @@ _First make sure that the latest nodejs and npm is installed_
 
 1. Install angular cli: `npm install -g @angular/cli`
 2. Create the app: `ng new my-angular-application`, or with no strict mode: `ng new my-angular-application --no-strict`
+
+> <small>Use the `--skip-git` rule also to skip git initialization</small>
+
 3. Go to the dir: `cd my-angular-application`
 4. Start the app: `ng serve`
 
