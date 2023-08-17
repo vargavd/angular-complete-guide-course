@@ -1,0 +1,21 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-12">
+      <button class="btn btn-primary" (click)="toggleParagraph()">
+        Display Details
+      </button>
+
+      <p *ngIf="showParagraph">Secret Password = tuna</p>
+
+      <ul>
+        <li
+          *ngFor="let log of toggleLog; let i = index"
+          [ngClass]="{ 'white-color': i > 3 }"
+          [ngStyle]="{ backgroundColor: i > 3 ? 'blue' : 'transparent' }"
+        >
+          {{ log }}
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
