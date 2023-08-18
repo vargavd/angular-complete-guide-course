@@ -137,3 +137,18 @@ Structural directive
 ```
   <div *ngFor="let server of servers">...content...</div>
 ```
+
+## String interpolation vs property binding
+
+Adding a dynamic value to an attribute can be done with 2 ways. With the normal attribute and string interpolation OR property binding without curly braces:
+
+```
+<!-- src attribute can be given both way -->
+<img src={{ recipe.imagePath}} [src]="recipe.imagePqth" />
+```
+
+> <small>With property binding, we give value directly to the underlying element's property.</small>
+
+---
+
+> <small>**Sidenote:** `shared` folder is used for models and features that are "shared" between components.</small>
