@@ -18,7 +18,7 @@ Changes the DOM itself - elements get added/removed.
 
 We can create a custom one with the `@Directive` decorator before the class. We pass an object to the decorator function, which has the following properties:
 
-- `selector`: css rule to angular where to insert the directive (for example `[appBasicCustomDirective]` - this tells angular to apply the directive to every DOM element which has this attribute)
+- `selector`: css rule to angular where to insert the directive (for example `[appBasicCustomDirective]` - this tells angular to apply the directive to every DOM element which has this attribute; Note: directives are usually camelCase as they are attributes)
 
 _We can get the DOM element with injection, as a constructor parameter, with the type of `ElementRef`._
 
@@ -109,6 +109,8 @@ A better approach to change something on event. We need to bind this decorator t
   }
 ```
 
+> <small>**Important:** here we bind a DOM property, so a property of the underlying DOM element. (Actually, a property of the style property...) Any property can be bound which is present on the actual DOM element the directive is sitting on.</small>
+
 **Trick with HostBinding:** You can bind a specific class name to a boolean property.
 
 ```
@@ -140,6 +142,8 @@ You can also use Input property in a directive (event binding also works). The I
   <p [appOurOwnDirective]="'royalblue'"></p>
 ```
 
+_So it is possible to have two attribute-like stuff on an element with brackets, where one of the directive (and its underlying "main" property) and the other of just a simple property of that very attribute. I think it can lead some confusing scenarios.. But marking a property as a main is just an option (and to be honest, I don't think that is a good idea for future readability...)._
+
 **Another trick, for property binding in general:** If a property accepts a single string, you can omit the square brackets and the single quoation marks:
 
 ```
@@ -147,6 +151,8 @@ You can also use Input property in a directive (event binding also works). The I
   <p appOurOwnDirective [propertyOfOurDirective]="'value_for_property'"></p>
   <p appOurOwnDirective propertyOfOurDirective="value_for_property"></p>
 ```
+
+> <small>My note: _There are so much possibility to confuse the future programmer, as which is the directive and which is the property..._</small>
 
 ### Setter for an Input
 

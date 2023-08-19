@@ -67,7 +67,7 @@ _Communication between code and template_
   - Between the curly brackets you can write any typescript expression that can be resolved to a string, but cant write multline expression
 - **property binding:** `[property]="data"`
   - this sets the underlying DOM element's property, so property here is not an attribute
-  - this can be used insted of string interpolation, with the `[innerText]="variableName"` syntax
+  - this can be used insted of string interpolation, with the `[innerText]="variableName"` syntax. It is important that between quotation marks, it is a javascript expression which must return the value we want to bind to the property.
 
 ### Event handling
 
