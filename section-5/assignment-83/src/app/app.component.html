@@ -1,0 +1,15 @@
+<div class="container">
+  <div class="row">
+    <div class="col-xs-3">
+      <app-game-control
+        (intervalFired)="newNumberFired($event)"
+      ></app-game-control>
+    </div>
+    <div class="col-xs-9">
+      <div *ngFor="let number of numbers">
+        <app-even *ngIf="number % 2 === 0" [number]="number"></app-even>
+        <app-odd *ngIf="number % 2 !== 0" [number]="number"></app-odd>
+      </div>
+    </div>
+  </div>
+</div>

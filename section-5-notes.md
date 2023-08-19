@@ -7,6 +7,8 @@ _Source maps_ allow browsers to connect (map) the downloaded javascript file to 
 
 ## Pass data between components: `property binding` or `event binding`
 
+> _We can create custom properties and events for directives and components._
+
 ### **Property binding** can be used to own custom properties
 
 - A parent component can bind a child component's element, if this element has a **@Input() decorator**. Example:
@@ -31,7 +33,13 @@ _Source maps_ allow browsers to connect (map) the downloaded javascript file to 
 
 ### Listening to custom event on components
 
-- it is similar to the property binding, but in the child component the event "property" must be an EventEmitter
+- it is similar to the property binding, but in the child component the event "property" must be an EventEmitter. It has to be created, hence the **()** in the end - the constructor has to be called.
+
+> <small>Sidenote: `EventEmitter` is a generic type - you have to define the event data type between <>. </small>
+
+> <small>Sidenote2: you have `emit` the event, so **fire** it.</small>
+
+**Plus. we need to add the **Output** decorator in front of the event properties of the child component.**
 
 ```
   // ... in the child component ts
@@ -48,6 +56,10 @@ _Source maps_ allow browsers to connect (map) the downloaded javascript file to 
 
 ```
 
+### Alias for `Output`
+
+You can also define an alias for the "event property". Example in the upper block.
+
 ## View encapsulation
 
 The css rules only apply to the component the css file belong to. The css rules applies to a specific attribute, which is the same within each component.
@@ -55,8 +67,10 @@ The css rules only apply to the component the css file belong to. The css rules 
 You can change view encapsulation mode this for each component with the `encapsulation` property in the `Component directive`.
 
 - **`ViewEncapsulation.Emulated`:** default behaviour
-- **`ViewEncapsulation.None`:** no special attribute is assigned to the component's elements. A css styles for this component will apply to every
-- **`ViewEncapsulation.ShadowDom`:** same result as default with the built-in shadow dom browser technology (**but it is not supported everrwhere??**)
+- **`ViewEncapsulation.None`:** no special attribute is assigned to the component's elements. A css styles for this component will apply to everything
+- **`ViewEncapsulation.ShadowDom`:** same result as default with the built-in shadow dom browser technology (**only browsers that supports shadow dom**)
+
+> <small>**Sidenote2:** in the Emulated (default) mode, Angular gives the same randomly generated attribute to all html element in a component. This is scope the component styles. </small>
 
 ## Local Reference
 
@@ -64,7 +78,7 @@ Will hold to a reference to an HTML DOM element - you can use them **only** in t
 
 ## **There is another method to access the DOM elements from the component: the directive _ViewChild_**
 
-You set the the "local reference" on any DOM element and then define a property in the component with the ViewChild directive. This property will has the `ElementRef` type. You give the reference name to the ViewChild function as a parameter:
+You set the the "local reference" on any DOM element and then define a property in the component with the ViewChild directive. This property will have the `ElementRef` type. You give the reference name to the ViewChild function as a parameter:
 
 ```
   // ... in the html
@@ -76,6 +90,8 @@ You set the the "local reference" on any DOM element and then define a property 
 
 _The second parameter is needed only if you want to use the `value` property in the ngOnInit function._
 _ElementRef type has a nativeElement property which is the DOM element._
+
+> <small>**Sidenote:** You shouldn't change the element through a `ViewChild`, it is a direct modification of the DOM. </small>
 
 ## `ng-content` directive (tag)
 
@@ -111,6 +127,15 @@ This hook runs at the creation of the component, plus every time an @Input() dec
 ## **ngDoCheck**
 
 Runs at _every_ check, so every time angular checks if anything changed (for example you clicked or a timer runs). It runs many times, so don't do anything big.
+Runs at every _change detection_.
+
+It receives an argument of type `SimpleChanges`. This object will list the Input elements that have been changed, with the current and the previous values as well.
+
+```
+ngOnChanges(changes: SimpleChanges): void {
+    console.log('ngOnChanges called', changes);
+  }
+```
 
 ## **ngAfterContentInit**
 
@@ -130,11 +155,16 @@ Runs when the view (and child views) have been checked
 
 ## **ngOnDestroy**
 
-When it is destroyed (for example an if directive has been false in the parent)
+When it is destroyed (for example the \*ngIf directive has been false in the parent)
+
+## Interfaces for lifecycle hooks
+
+Almost every Lifecycle Hook has an interface, which is recommended to mark as implemented in the component, if we use a hook in there. For example, for `ngOnChanges` hook, there is an `OnChanges` interface.
 
 # `@ContentChild` directive
 
-It can be used to access a DOM element in the projected content our component got. This DOM element will be part of the `content` and not the `view` - hence the name **ContentChild** and not _ViewChild_
+It can be used to access a DOM element in the projected content our component got. This DOM element will be part of the `content` and not the `view` - hence the name **ContentChild** and not _ViewChild_.
+This will be available only at ContentInit lifecycle.
 
 ---
 
