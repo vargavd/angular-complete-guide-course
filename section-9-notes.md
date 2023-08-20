@@ -27,6 +27,8 @@ A service is just a normal TS class, there is no Service decorator. The importan
   }
 ```
 
+> <small>**Sidenote:** there is another way to inject a dependency into a component: with the the `inject` method in the constructor: `this.loggingService = inject(LoggingService);`. But this is rarely used.</small>
+
 ## Hierarchical Injector
 
 Angular's `Dependency Injector` is a hierarchical one. It means that if a component gets a service with injection, then all of its descendant component will get the same instance - but not the siblings. So the instances are propagate down. So where to inject it?
@@ -36,9 +38,9 @@ Angular's `Dependency Injector` is a hierarchical one. It means that if a compon
 
 > <small>_Sidenote:_ if we inject a service in the `AppComponent`, but also in another component as well, this latter injection will override the instance for this component (??and branch??).</small>
 
-So in order to not to overwrite a `Service` in a component and get the "inherited" one, simply don't add it to the `providers array`. But keep it in the constructor.
+So in order to not to overwrite a `Service` in a component and get the "inherited" one, simply don't add it to the `providers array` in the components. But keep it in the constructor.
 
-> <small>_Sidenote:_ We can inject Services into Services, but for that, we need to do two things: provide the Service in the app module, plus mark the target service with the `@Injectable` decorator - so the service we want to inject other service to.</small>
+> <small>_Sidenote:_ We can inject Services into Services, but for that, we need to do two things: provide the Service in the app module, plus mark the target service with the `@Injectable` decorator - so the service we want to inject other service to. _(It needs to have a metadata attached to it)_</small>
 
 > <small>_Other sidenote:_ newer versions recommend to add the `@Injectable` decorator to all service.</small>
 
