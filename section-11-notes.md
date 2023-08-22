@@ -11,7 +11,7 @@ We can set up Routing with the following steps:
 
 1. Defining a variable with type `Routes` (from `@angular/router`), import
 2. Add `RouterModule` to the `imports` array in the `@NgModule` decorator, but in a special way. Add the `RouterModule.forRoot(appRoutes)` to the `imports` where appRoutes is the variable with the `Routes` type.
-3. Render the currently _'selected'_ component with a special (element style) directive: `router-outlet`
+3. Render the currently _'selected'_ component with a special (element style) directive: `router-outlet`. Usually in the app.component.html - this file will serve as a global layout for the app.
 
 ### `Routes`
 
@@ -69,7 +69,7 @@ _Howto:_
 
 ## Go to route programatically
 
-We can inject the angular `Router` and use it to trigger a route change. The `router.navigate` accepts an array of strings as the first parameter.
+We can inject the angular `Router` and use it to trigger a route change. The `router.navigate` accepts an array of strings as the first parameter. (It must be an array, the `navigate` method does not accept string.)
 
 ```
   // ...in some component
@@ -98,6 +98,8 @@ The dynamic route segment of the path should start with `':'`. We can get this p
 
 > <small>Sidenote: you can have multiple dynamic segments (parameters) in one route.</small>
 
+> <small>**Sidenote2:** but this is a snapshot only, the values of one moment. So if the values are changing in the url, but the path will be the same structure - then the component will not be reinstiated. So if we get the snapshot in the ngOnInit function - it will not be run again the second time and we will be stuck with the old values.</small>
+
 ### Getting route params reactively
 
 It is important to "reload" the parameters if they change. For this, the `ActivatedRoute` offers a params property which is an **Observable** - you can subscribe to it and get the new parameters upon any change.
@@ -106,9 +108,11 @@ It is important to "reload" the parameters if they change. For this, the `Activa
 
 The Observable type has a `subscribe` method. The first parameter of this method is a function that fires if any new data is available.
 
-> <small>Sidenote: If you get the url parameters from the `...snapshot` in the `ngOnInit` lifecycle hook, you only need to reget the parameters if it is possible to change the parameters without leaving the current `'Component'`.</small>
+> <small>**Sidenote:** If you get the url parameters from the `...snapshot` in the `ngOnInit` lifecycle hook, you only need to reget the parameters if it is possible to change the parameters without leaving the current `'Component'`.</small>
 
-> <small>Sidenote2: it is best practise to unsubscribe on `ngOnDestroy` (example in the code), Athough it is not necessarry because angular does it for us. In case of custom Observables, you have to take care the unsubscription yourself.</small>
+> <small>**Sidenote2:** I am not entirely sure about this... but if you get the params from the `subscribe` method, you don't need a `snapshot` method before.</small>
+
+> <small>**Sidenote3:** it is best practise to unsubscribe on `ngOnDestroy` (example in the code), Athough it is not necessarry because angular does it for us. In case of custom Observables, you have to take care the unsubscription yourself.</small>
 
 ## Query parameters
 
@@ -196,6 +200,8 @@ Double asterisks for the `path` property means to catch all routes. Make sure to
   { path: '', redirectTo: '/home', pathMatch: 'full' } 
 ```
 
+> <small>**Sidenote:** Then I don't understand how `path: ''` works as a first route...</small>
+
 ## Outsourcing routes to another module
 
 We can outsource the routing definitions to an external module - this is a best practise if we have more than 2 or 3 routes because the app module can easily become crowded.
@@ -247,7 +253,7 @@ There is a `data` property in the route definition object, which is passed down 
 
 # Resolver: getting dynamic data based on route
 
-`Resolver` is a `Guard` which "resolves" some data, before the route is rendered. It is verry similar to a "normal" guard, but it does not determine whether the route should be displayed or not - but it gets some data for the component that handles the corresponding route, (usually it gets/loads something based on a route parameter).
+`Resolver` is a `Guard` which "resolves" some data, before the route is rendered. It is verry similar to a "normal" guard, but it does not determine whether the route should be displayed or not - it gets some data for the component that handles the corresponding route, (usually it gets/loads something based on a route parameter).
 
 **Steps implementing such a resolver:**
 
@@ -264,7 +270,9 @@ There is a `data` property in the route definition object, which is passed down 
   }
 ```
 
-> <small>Sidenote: a service most likely will be needed to be injected into our service to get the data.</small>
+> <small>**Sidenote:** a service most likely will be needed to be injected into our service to get the data.</small>
+
+> <small>**Sidenote2:** this `resolve` functions runs every time the route is rerendered - so we don't need to use `subscribe` here</small>
 
 3. Add this custom service to the correct route, with the `resolve` property. You add an object to the `resolve` property, which is key-value pairs. The key will be used in your component to get the loaded data, the value is your resolver service.
 
