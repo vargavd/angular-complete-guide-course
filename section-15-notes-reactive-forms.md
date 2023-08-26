@@ -2,142 +2,265 @@
 
 _Here the form is created programatically, in TS code._
 
----
+> <small>Sidenote: `FormsModule` is not needed for reactive forms. We need to import `ReactiveFormsModule` instead.</small>
 
-_Angular gives a javascript object representation of the form!_
+## Create the form object
 
-Two approach:
-
-- **Template driven**: you set up the form in the template and angular "parses" them and create the form object. It uses two way data-binding with directives (`ngModel`, `ngForm` and `ngModelGroup`) and local reference.
-- **Reactive**: the form is created programatically and synchronized with the DOM. Here you create the form object **and** the html form code as well and manually connect the two! (**CLARIFICATION NEEDED**)
-
-> <small>Clicking on angular forms submit button does not result a submit, an http request (usually a POST). Instead of a request, this event is handled by angular.</small>
-
-## Template driven forms
-
-The `FormsModule` is needed to be imported in the app.module.ts for the template driven approach:
+The form object we need to create will be type of `FormGroup`. You need to initialise it **before** the template is rendered (for example in the `ngOnInit` lifecycle hook).
 
 ```
-  import { FormsModule } from '@angular/forms';
+  signupForm: FormGroup;
 
-  @NgModule({
-    ...
-    imports: [
-      FormsModule
-    ...
-  })
-```
-
-_With that import, Angular will create the representation object of a form automatically, as the `ngForm` directive has a `form` selector. This representation object will be type of `NgForm`._
-
-_For adding the input values to the `NgForm`, we have to set the name attribute and add the `ngModel` directive to each input. If we add the `ngModel` directive without parenthesis, it will only add the input value to the `NgForm` object. We can add it like `[ngModel]="initialValue"`, in that case we define the initial value of the control (one way databinding). If we add it with `([ngModel])="inputVal"`, this is two way databinding._
-
-_But it will not detect the imputs automatically, you need to register them manually with adding `ngModel` directive to the inputs, but without ([parenthesis]) (so no signs of 2 way databinding). The name of that input will come from the normal html name attribute._
-
-_To the get this `NgForm` form object, first you have to create a local reference on the form element, but like this `#myForm="ngForm`. So it make the local reference equal to the automatically created `NgForm` object. It tells Angular pls give me access the form object you created automatically.
-Then give this myForm reference to the submit handler func as a parameter:
-`(ngSubmit)="onSubmit(myForm)`_
-
-```
-  // ... in the template
-  <form (ngSubmit)="onSubmit()" #myForm="ngForm">
-
-  // .. in the controller ts file
-  onSubmit(form: NgForm) {
-    console.log(form); // in the printed obhect, there is a value object which contains the current form values with names as keys and values entered in the form.
+  ngOnInit() {
+    this.signupForm = new FormGroup({});
   }
 ```
 
-> <small>The `NgForm` type has many information about the form. For example contains the input controls as well. Or the status of the form - for example is it dirty (unchanged) or is it valid.</small>
-
-**You can also use the `ViewChild` decorator to this `local reference` as an `NgForm` property:**
+We insert an object to the `FormGroup` constructor which has the controls as property.
 
 ```
-  // in the template
-  <form #f="ngForm">
-
-  // in the controller
-  @ViewChild('f') ourFormObject: NgForm;
+  new FormGroup({
+      'username': new FormControl('user),
+      'email': new FormControl(null),
+      'gender': new FormControl('male')
+      ...
+    });
 ```
 
-_In that way you can get the form object before submit._
+> <small>It is a good idea use strings as property name so during minimification they are kept</small>
 
-## Validation
+## Connect the created form object to HTML
 
-There are some built-in validator directives in angular (`required` or `email` fe). **Required** is not actually a directive, it is a normal html attribute, it just triggers an angular directive as a selector.
+`FormControl` constructor accepts 3 params: the initial value, the validators and the async validators.
 
-Angular tracks the validity on the form level (overall) and on for the controls individually also. They can be found in the `NgForm` object. Also angular adds some classes to the inputs as well: 'ng-dirty ng-touched ng-valid ng-invalid' for example.
-
-> <small> [Built in Angular Validators](https://angular.io/api/forms/Validators). For the directive versions (which we need to use in the template driven approach, search for **validator** here: https://angular.io/api?type=directive) </small>
-
-### Some real world examples for validation
-
-We can disable a button until the form is valid:
+To connect the created `FormGroup` property with the actual form DOM element, we need to use the `formGroup` directive and bind (its property) to our `FormGroup` property.
 
 ```
-  // here f is the local reference for the form, and we bind the disabled property of the inner DOM object (so not the disabled attribute)
-  <button [disabled]="!f.valid">Submit</button>
+  <form [formGroup]="signupForm">
 ```
 
-Adding a red border for an empty input, if the user has already "touched" it
+> <small>_Sidenote: this will also tell angular don't create the form object automatically._</small>
+
+### Connect the controls
+
+To connect the inputs/selects/etc controls to the created form properties, use the `formControlName` directive and give if the property name.
 
 ```
-  input.ng-invalid.ng-touched { border: 1px solid red; }
+  <input formControlName="username">
 ```
 
-Getting a reference to an input and use its validity properties, using a `local reference` and the `ngModel directive`:
+> <small>Here we don't use brackets, so we can add a simple string as value. But in reality, this is actualy this: [formControlName]="'username'"</small>
+
+## Submit the form
+
+To subscribe to submission, we use the same `ngSubmit` directive we used in the template forms.
 
 ```
-  <input type="email" required email ngModel #email="ngModel">
-  <span class="help-block" *ngIf="!email.valid && email.touched">
-    Please enter a valid email!
+  <form (ngSubmit)="onSubmit()">
+```
+
+## Validation in Reactive forms
+
+You can add a validator to a control, as the second parameter of the `FormCOntrol`.
+
+```
+  'username': new FormControl(null, Validators.required);
+```
+
+> <small>`Validator.required` is actually a method, but we don't call it here</small>
+
+### Multiple Validators on control
+
+To add multiple, add an array of Validators as second parameter.
+
+```
+  'email': new FormControl(null, [Validators.required, Validators.email]),
+```
+
+### Use validation status in the template
+
+You can get the validation status of a control with the `get` method of the created form object. For example display an error message based on a control status:
+
+```
+  <span
+    class="help-block"
+    *ngIf="!signupForm.get('username').valid && signupForm.get('username').touched"
+  >
+    Please enter a valid username!
   </span>
 ```
 
-**You can store an NgModel representation of an input too in a local reference**
-
-# ngModel - Property binding
-
-ngModel can be used with one way property binding to set the default value, like this: `[ngModel]="foobar"` where `foobar` is a property of the component. A simple text value in single quote would also work.
-
-ngModel can be used two way binding as well: `[(ngModel)]="propertyName"`. In that way, you can get the value of that input any time, no need for submit.
-
-# Grouping values
-
-We can group inputs together, and we also can get the validity of a group. To group inputs together, add `ngModelGroup directive` to a wrapper html tag.
+This can be used to check the whole form validity as well.
 
 ```
-<div ngModelGroup="userData">
-...
-</div>
+  <span
+    class="help-block"
+    *ngIf="!signupForm.valid && signupForm.touched"
+  >
+    Please enter a valid data!
+  </span>
 ```
 
-In that case userData will be on the `ngForm` object as a property upon submit.
+## Grouping
 
-_To get a group before submit, you can use a local reference as well._
-
-```
-<div ngModelGroup="userData" #userData="ngModelGroup">
-...
-</div>
-```
-
-# Set an input value with the reference of the form
+To have a group inside a form object, use the `FormGroup` object again - this will be a nested `FormGroup` inside the form which is also typed `FormGroup`. Inception.
 
 ```
-  // getting a local reference of the form in the template
-  <form #f="ngForm">
+  new FormGroup({
+    'userData': new FormGroup({
+      'username': new FormControl(null, Validators.required),
+      'email': new FormControl(null, [Validators.required, Validators.email]),
+    }),
+  ...
+```
 
-  // declare viewchild property that points to this local reference, in the component
-  @ViewChild('f') myForm: NgForm;
+We need to update the template as well. Create a wrapper div around the "nested" controls, with a `formGroupName` directive which equals to the group property name in the form object.
 
-  // set value to a specific input
-  this.myForm.form.patchValue({
-    email: 'test@test.com'
-  });
+```
+  <div formGroupName="userData">
+    ... // username and email
+  </div>
+```
 
-  // set every value in the form
-  this.myForm.setValue({
-    ... set every input
+Plus we need to update the `get` calls and give them the appropriate "path" to the control:
+
+```
+  <span
+    *ngIf="!signupForm.get('userData.username').valid && signupForm.get('userData.username').touched"
+  >
+```
+
+## Array of controls (inputs)
+
+To create an array of controls use the type `FormArray`. But it has a strange pattern.
+
+First create a property of this type in the `FormGroup`.
+
+```
+  this.form = new FormGroup({
+    ...
+    'hobbies': new FormArray([]);
   })
 ```
+
+To List the controls, you need a wrapper div with a `formArrayName` directive, and inside that div there should be another one with `ngFor` where the real list "happens". And inside that, just add the index to the `formControlName` directive of an input:
+
+```
+<div formArrayName="hobbies">
+  <div *ngFor="let hobbyControl of getControls(); let i = index">
+    <input [formControlName]="i">
+  </div>
+```
+
+Sidenote: due to some limitation, for that to work you have to create an additional function for getting the controls:
+
+`getControls: () => (<FormArray>this.signupForm.get('hobbies')).controls;`
+
+When adding a new control to the array, you have to cast the return value of the get manually:
+
+```
+  (<FormArray>this.form.get('hobbies')).push(new FormControl(null, Validators.required));
+```
+
+## Custom validator
+
+A custom validator is just a function that gets a `FormControl` object and returns null for valid value and an object with a `true` property if the value is invalid:
+
+```
+  validFunc(control: FormControl): {[s: string]: boolean} {
+    // if invalid
+    return { 'nameIsInvalid': true };
+
+    // if valid
+    return null;
+  }
+```
+
+Then add this function to the second parameter of `FormControl` constructor:
+
+```
+  new FormGroup({
+    ...
+    'someControl': new FormControl(null, this.validFunc.bind(this)),
+    ...
+  })
+```
+
+Binding `this` is required if you use the `this` keyword inside the function.
+
+The key which is returned when the control is invalid (`nameIsInvalid` in the last example) is in the errors array of the control object, in the form object, but only if it is invalid.
+
+### Custom async validator
+
+To create an async validator, the pattern is very similar to the sync one, only you have to return a `Promise` or an `Observable` in the validator func, resolve an object or null (depending on the valid status) and then add this func to the 3 parameter of the `FormControl` constructor.
+
+```
+  // the validator func:
+  forbiddenEmails(control: FormControl): Promise<any> | Observable<any> {
+    const promise = new Promise<any>((resolve, reject) => {
+      setTimeout(() => {
+        if (control.value === 'test@test.com') {
+          resolve({'emailIsForbidden': true}); // return this if the form control is not valid
+        } else {
+          resolve(null); // return null it passes the test
+        }
+      }, 1500);
+    });
+
+    return promise;
+  }
+
+  // in the FormGroup constructor:
+  ...
+  'email': new FormControl(null, [Validators.required, Validators.email], this.forbiddenEmails),
+  ...
+```
+
+## Listening to any change in the form
+
+### Subscribe to any value change
+
+You can listen to any value change in the form. Here we print to console the whole form value with every change (keystroke, select change etc...)
+
+```
+  this.signupForm.valueChanges.subscribe(
+    (value) => console.log(value)
+  );
+```
+
+> <small>**Sidenote:** you can subscribe for any change in the individual FormControls as well</small>
+
+### Listen to validity change
+
+Very similar to the value change:
+
+```
+  this.signupForm.statusChanges.subscribe(
+    (status) => console.log(status)
+  );
+```
+
+## Update the form with `setValue` and `patchValue`
+
+They work the same as in the template driven approach.
+
+```
+  // update the whole form
+  this.signupForm.setValue({
+    'userData': {
+      'username': 'Max',
+      'email': 'test2@test.com'
+    },
+    'gender': 'male',
+    'hobbies': []
+  });
+
+  // update only a part of the form
+  this.signupForm.patchValue({
+    'userData': {
+      'username': 'Anna'
+    }
+  });
+```
+
+**We can also reset the form: `this.signupForm.reset();`**
