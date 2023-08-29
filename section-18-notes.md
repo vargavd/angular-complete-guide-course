@@ -254,3 +254,7 @@ It is possible to add multiple interceptors to the module. The order is very imp
 Example in the app....
 
 > <small> **Sidenote:** (this section is insane long and full with information...) </small>
+
+---
+
+> **Important: to overwrite everything in Firebase - use the put request**
