@@ -3,13 +3,15 @@ import { HttpClient } from "@angular/common/http";
 
 import { RecipeService } from "../recipes/recipe.service";
 import { Recipe } from "../recipes/recipe.model";
-import { map, tap } from "rxjs";
+import { exhaustMap, map, take, tap } from "rxjs";
+import { AuthService } from "../auth/auth.service";
 
 @Injectable({providedIn: 'root'})
 export class DataStorageService {
   constructor (
     private http: HttpClient,
-    private recipeService: RecipeService
+    private recipeService: RecipeService,
+    private authService: AuthService
   ) {}
 
   storeRecipes() {
@@ -20,15 +22,18 @@ export class DataStorageService {
   }
 
   fetchRecipes() {
-    return this.http
-      .get<Recipe[]>('https://angular-tcg---course-project-default-rtdb.europe-west1.firebasedatabase.app/recipes.json')
-      .pipe(map(recipes => { // map() is an rxjs operator
+    return this.http.get<Recipe[]>(
+        'https://angular-tcg---course-project-default-rtdb.europe-west1.firebasedatabase.app/recipes.json?'
+      ).pipe(
+      map(recipes => { // map() is an rxjs operator
         return recipes.map(recipe => { // map() is a javascript array method
           return {...recipe, ingredients: recipe.ingredients ? recipe.ingredients : []};
         });
       }),
       tap(recipes => {
         this.recipeService.setRecipes(recipes);
-      }));
+      })
+    );
+    
   }
 }
