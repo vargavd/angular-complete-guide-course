@@ -76,7 +76,7 @@ Transforms or filters the data coming from an Observable. We give operators into
 ## **Subject**
 
 Subject is a special construct, similar to the Observable, which you can also subscribe to. The difference from an Observable is that you can call "next" from outsite on a Subject so it can be used like an event emitter. Subject is recommended over EventtEmitter.
-Also **unsibscribe** from Subjects as well.
+Also **unsubscribe** from Subjects as well.
 
 > <small>**Important:** The difference between `Subject` and `Observable` is that `Observable` is a more passive stream - it just generates or gets the data. `Subject` is more active - we can trigger the next data with it, similarly to `EventEmitter`.</small>
 

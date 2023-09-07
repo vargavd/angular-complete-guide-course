@@ -29,7 +29,7 @@ You can add a "folder" to that URL - this way you create that "database", but we
 
 ## Requirements
 
-To be able to make HTTP requests, we must import `HTTPClientModule` in a module and then inject HTTPClient service to a component.
+To be able to make HTTP requests, we must import `HttpClientModule` in a module and then inject `HTTPClient` service to a component.
 
 ```
   // ... in a module ts file
