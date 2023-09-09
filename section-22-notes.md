@@ -64,3 +64,82 @@ This is also not an Angular feature - just a regular `module`.
 
 It is a module that is used to make the `AppModule` a bit leaner. We just outsource some declarations or imports to it.
 For example get all the `services` from a `Core Module` (if we don't use `providedIn: root` obviously...).
+
+> <small>_In this section, we only did "cosmetic" changes - which certainly helps to have a cleaner and maintainable code. But, it doesn't help in performance._</small>
+
+## Lazy Loading
+
+It helps in performance, but `feature modules` are prerequisite for that.
+
+If every route is associated with a module, we can load a module for only the appropriate route. Hence, the `Feature Modules`. And these `Feature Modules` need to bring their own routes.
+
+In that way initially we download a smaller bundle of code!
+
+This has a strange syntax:
+
+First, remove the 'root' path from the `FeatureModule` **routes**:
+
+```
+@NgModule({
+  imports: [
+    RouterModule.forChild([
+      {
+        path: '', // <-- **empty path**
+        component: '...',
+        children: [
+          ...
+        ]
+      }
+    ])
+  ]
+})
+```
+
+Then in the main `Routes` list, add back the object for the removed path, with a special `loadChildren` property. This is loadChildren defines what needs to be bundled and downloaded for this path. It has the correct path to the module file, and then import the appropriate `Module` class from that.
+
+```
+  const appRoutes: Routes = [
+  {
+    path: '',
+    ...
+  },
+  {
+    path: 'recipes',
+    loadChildren: () => import('./recipes/recipes.module').then(m => m.RecipesModule)
+  },
+];
+```
+
+**You have to remove that `module` from `AppModule`'s `imports`.**
+
+## Preload Lazy-loading
+
+We can further optimize the `Lazy Loading` technique, with preloading the modules, even before they needed. The settings is where we call forRoot, for our "global" routes definition.
+
+```
+  @NgModule({
+    imports: [
+      RouterModule.forRoot(appRoutes, {preloadingStrategy: PreloadAllModules})
+    ],
+    ...
+  })
+  ...
+```
+
+It means that the initial download will be small and then the rest modules will load as soon as possible in the idle time.
+
+> <small> Sidenote: Somehow we could set up which modules should be preloaded... but it was not detailed in the course.</small>
+
+## Services and when to load them
+
+Where we can "load" or "provide" services and one instance is where available:
+
+- AppModule - application wide the same instance
+- App- or other Components - inside a component tree
+- Eager ("normally") loaded Module - application wide the same instance
+- Lazy-Loaded Modules - **only in the loaded module**
+- with the `providedIn: root` settings - everywhere
+
+The default should be: add it with AppModule or with the `providedIn: roow` settings.
+
+**But:** if you "provide" a `service` in a `module` that is imported by the `AppModule` (which is normally loaded) **and** is imported by a lazy-load module - they will have different instances. For example if we load a service in the SharedModule which is imported by many other modules. This can be a very big bug if you don't know what is happening.
