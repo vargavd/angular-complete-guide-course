@@ -94,3 +94,138 @@ So either in the `constructor`:
 or just print in the `template` - this will be updated everytime the data changes in the store:
 
 {{ count$ | async}}
+
+### Change the data in store
+
+You `dispatch actions` to initiate some change, you cannot modify the state directly. These `dispatched actions` are then handled by the reducers.
+
+First, define the `actions` that can be `dispatched`, with the `createAction` method. Its first parameter is the string identifier of the action. It must be a **unique** amongst actions - so it is a convention to add the name of the feature this action belongs between brackets.
+
+```
+export const increment = createAction('[Counter Component] Increment');
+```
+
+Second, we define the handlers of these actions
+
+#### Handle action in `createReducer`
+
+If we created our reducer with `createReducer`: it gets the handlers in the second param with the `on` method:
+
+```
+  export const counterReducer = createReducer(
+  initialState,
+  on(increment, state => state + 1),
+);
+```
+
+The `on` method's first parameter is the action we defined previously, the second parameter is the `handler func`. **This handle func is executed by `NgRX`.** This function gets the currernt state as a parameter and returns the updated state.
+
+\*\*It is important not to change the state parameter directly - create a new one (for example with a spread operator for `objects`, or `slice` for `arrays`).
+
+The returned data will be stored by `NgRX` as a new state.
+
+### Dispatching an Action
+
+You can `dispatch` an `action` with the `dispatch` functions of the NgRx store.
+For the first parameter, you add the return value of the `action` function you created with the `createAction` function previously.
+
+```
+  // action creator definition
+  export const increment = createAction('[Counter] Increment');
+
+  // dispatching an event, possibly in another component
+  this.store.dispatch(increment());
+```
+
+### Attach data to actions
+
+To enable for the `action` to get property, you must use the second argument of the `createAction` function.
+
+```
+  export const increment = createAction(
+  '[Counter] Increment',
+  props<{ value: number }>()
+);
+```
+
+You set the type as the `generic type` of this `proprs function`.
+
+To get the property which the created `action` was given, you can use the second argument of the ` action handler`` function, in the  `reducer`:
+
+```
+  export const counterReducer = createReducer(
+  initialState,
+  on(increment, (state, action) => state + action.value)
+);
+```
+
+The second `argument` here has a string `type` property, which is the name of the `action` (first param of the `createAction` func). The other keys of this object are the keys you defined as the `generic type` of `props` previously.
+
+And then, when you dispatch the action, you must give a value of the exact type to the action creator:
+
+```
+  this.store.dispatch(decrement({ value: 1}));
+```
+
+### Alternative way of creating a reducer, without `createReducer`
+
+This is the older syntax, which can be found in older projects.
+
+```
+  export function counterReducer(state = initialState, action: any) {
+  if (action.type === '[Counter] Increment') {
+    return state + action.value;
+  }
+
+  return state;
+}
+```
+
+### Anternative way of create and action, without `createAction`
+
+This is the older syntax, which can be found in older projects.
+
+```
+  // In this approach, we define the action property manually
+  export class IncrementAction implements Action {
+  readonly type = '[Counter] Increment';
+  constructor(public value: number) {}
+}
+```
+
+And then, when dispatching the action, you instantiate this action object, instead of calling an action creator:
+
+`this.store.dispatch(new IncrementAction(1));`
+
+**This alternative solutions were commented out in the code - if possible, use the newer approach as it is shorter and more clearer.**
+
+## Selectors
+
+Selectors are just functions and returns the desired value from the store. It gets the whole store as first param.
+
+```
+  // defining the selector
+  export const selectCounter = (state: { counter: number }) => {
+    return state.counter;
+  }
+```
+
+To use the `selector`, we just give this to the `store.select` function as first parameter, instead of the key.
+
+```
+  // using the selector
+  this.count$ = store.select(selectCounter);
+```
+
+_The advantage of this is only when you have a more complex selection logic._
+
+You can have multiple selectors obviously.
+
+You can also combine selectors or based one selector on another:
+
+```
+  export const selectDoubleCount = createSelector(
+    selectCounter,
+    (state) => state * 2
+  )
+```
