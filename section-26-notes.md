@@ -9,9 +9,9 @@ In that way - you don't have to store state in `services` or `components`.
 ## NgRX structure
 
 **Store:** you must create a data store, that is where the state (data) is managed. The `components` react out to that `store` and listen to changes.
-Plus Components can trigger data changes in the store with `dispatching actions` which trigger `reducers` inside the `store`. `Reducers` are the actual things that change the state.
+Plus Components can trigger data changes in the store with `dispatching actions` which trigger `reducers` inside the `store`. `Reducers` are the ones that actually change the state.
 
-**Selectors:** they are optionals, they can be used to get data from the Store.
+**Selectors:** they are optionals, they can be used to get a specific data from the Store.
 
 There are also `Effects` they are triggered as "_sideeffects_" when any `action dispatches`.
 
@@ -81,7 +81,7 @@ Then you define an `observable` property and set the value to the actual value i
   }
 ```
 
-The `Store` type must be generalized with a type that has the keys what we are using in there - it is only for that the TS compiler is not complaining.
+The `Store` type must be generalized with a type that has the keys what we are using in there - it is only important for the TS compiler.
 
 > <small>Sidenote: It is a convention to add the `$` sign to the end of a property (or variable) name if it is an `Observable`.</small>
 
